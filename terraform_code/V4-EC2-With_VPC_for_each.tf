@@ -1,24 +1,24 @@
 provider "aws" {
-  region = "us-east-1"
+  region = "ap-south-1"
 }
 
 resource "aws_instance" "demo-server" {
-    ami = "ami-053b0d53c279acc90"
+    ami = "ami-04a37924ffe27da53"
     instance_type = "t2.micro"
-    key_name = "dpp"
-    //security_groups = [ "demo-sg" ]
-    vpc_security_group_ids = [aws_security_group.demo-sg.id]
-    subnet_id = aws_subnet.dpp-public-subnet-01.id 
+    key_name = "keypair"
+    security_groups = [ "eks" ]
+    vpc_security_group_ids = [aws_security_group.eks.id]
+    subnet_id = aws_subnet.my-public-subnet-01.id 
 for_each = toset(["jenkins-master", "build-slave", "ansible"])
    tags = {
      Name = "${each.key}"
    }
 }
 
-resource "aws_security_group" "demo-sg" {
+resource "aws_security_group" "eks" {
   name        = "demo-sg"
   description = "SSH Access"
-  vpc_id = aws_vpc.dpp-vpc.id 
+  vpc_id = aws_vpc.my-vpc.id 
   
   ingress {
     description      = "SHH access"
@@ -50,55 +50,55 @@ resource "aws_security_group" "demo-sg" {
   }
 }
 
-resource "aws_vpc" "dpp-vpc" {
+resource "aws_vpc" "my-vpc" {
   cidr_block = "10.1.0.0/16"
   tags = {
-    Name = "dpp-vpc"
+    Name = "my-vpc"
   }
   
 }
 
-resource "aws_subnet" "dpp-public-subnet-01" {
-  vpc_id = aws_vpc.dpp-vpc.id
+resource "aws_subnet" "my-public-subnet-01" {
+  vpc_id = aws_vpc.my-vpc.id
   cidr_block = "10.1.1.0/24"
   map_public_ip_on_launch = "true"
-  availability_zone = "us-east-1a"
+  availability_zone = "ap-south-1a"
   tags = {
-    Name = "dpp-public-subent-01"
+    Name = "my-public-subent-01"
   }
 }
 
-resource "aws_subnet" "dpp-public-subnet-02" {
-  vpc_id = aws_vpc.dpp-vpc.id
+resource "aws_subnet" "my-public-subnet-02" {
+  vpc_id = aws_vpc.my-vpc.id
   cidr_block = "10.1.2.0/24"
   map_public_ip_on_launch = "true"
-  availability_zone = "us-east-1b"
+  availability_zone = "ap-south-1b"
   tags = {
-    Name = "dpp-public-subent-02"
+    Name = "my-public-subent-02"
   }
 }
 
-resource "aws_internet_gateway" "dpp-igw" {
-  vpc_id = aws_vpc.dpp-vpc.id 
+resource "aws_internet_gateway" "my-igw" {
+  vpc_id = aws_vpc.my-vpc.id 
   tags = {
-    Name = "dpp-igw"
+    Name = "my-igw"
   } 
 }
 
-resource "aws_route_table" "dpp-public-rt" {
-  vpc_id = aws_vpc.dpp-vpc.id 
+resource "aws_route_table" "my-public-rt" {
+  vpc_id = aws_vpc.my-vpc.id 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.dpp-igw.id 
+    gateway_id = aws_internet_gateway.my-igw.id 
   }
 }
 
-resource "aws_route_table_association" "dpp-rta-public-subnet-01" {
-  subnet_id = aws_subnet.dpp-public-subnet-01.id
-  route_table_id = aws_route_table.dpp-public-rt.id   
+resource "aws_route_table_association" "my-rta-public-subnet-01" {
+  subnet_id = aws_subnet.my-public-subnet-01.id
+  route_table_id = aws_route_table.my-public-rt.id   
 }
 
-resource "aws_route_table_association" "dpp-rta-public-subnet-02" {
-  subnet_id = aws_subnet.dpp-public-subnet-02.id 
-  route_table_id = aws_route_table.dpp-public-rt.id   
+resource "aws_route_table_association" "my-rta-public-subnet-02" {
+  subnet_id = aws_subnet.my-public-subnet-02.id 
+  route_table_id = aws_route_table.my-public-rt.id   
 }
