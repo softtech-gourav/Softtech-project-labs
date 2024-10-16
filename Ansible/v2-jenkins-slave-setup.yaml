@@ -1,16 +1,15 @@
 ---
-- hosts: jenkins-slave
+- hosts: jenkins_slave
   become: true 
   tasks: 
   - name: update ubuntu repo and cache 
     apt: 
       update_cache: yes 
-      fource_apt_get: yes 
       cache_valid_time: 3600 
 
   - name: install java 
     apt: 
-      name: openjdk-11-jre
+      name: openjdk-17-jre
       state: present
 
   - name: download maven packages 
